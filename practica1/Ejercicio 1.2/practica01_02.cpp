@@ -7,6 +7,12 @@
  #include <common/shader.hpp>
  
 #define M_PI       3.14159265358979323846
+
+static int winwidth,winheight;
+
+static int mx,my;
+static int flag=0;
+static float rotx=0.0f, roty=0.0f;
  
 float verticesAxis[] = {-20.0f, 0.0f, 0.0f, 1.0f,
             20.0f, 0.0f, 0.0f, 1.0f,
@@ -455,6 +461,11 @@ void renderScene(void) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
  
     setCamera(10,2,10,0,2,-5);
+
+    glTranslatef(-2.0f,-2.0f,1.0f);
+
+    glRotatef(rotx,0.0f,1.0f,0.0f);
+    glRotatef(roty,1.0f,0.0f,0.0f);
  
     glUseProgram(p);
     setUniforms();
@@ -464,6 +475,7 @@ void renderScene(void) {
 
     glBindVertexArray(vao[2]);
     glDrawArrays(GL_LINES, 0, 6);
+    glPopMatrix();
  
     glutSwapBuffers();
 }
@@ -491,17 +503,77 @@ GLuint setupShaders() {
  
     return(p);
 }
+
+void mousefunc(int button,int state,int x,int y)
+{
+    if (button==GLUT_LEFT_BUTTON) {
+        if (state==GLUT_DOWN) {
+            flag=1;
+        } else {
+            flag=0;
+        }
+    }
+}
+
+void motionfunc(int x,int y)
+{
+    if (flag>0) {
+        if (flag>1) {
+            rotx+=360.0f*(x-mx)/winwidth;
+            roty+=360.0f*(y-my)/winheight;
+        }
+
+        mx=x;
+        my=y;
+
+        renderScene();
+
+        flag=2;
+    }
+}
+
+void init_amb(void) 
+{
+   GLfloat mat_specular[] = { 1.0, 1.0, 1.0, 1.0 };
+   GLfloat mat_shininess[] = { 20.0 };
+   GLfloat light_position[] = { 1.0, 7.0, 5.0, 0.0 };
+   GLfloat mat_ambient[] = {0.33, 0.22, 0.03, 1.0};
+   GLfloat mat_diffuse[] = {0.78, 0.57, 0.11, 1.0};
+
+   glClearColor (0.0, 0.0, 0.0, 0.0);
+   glShadeModel (GL_SMOOTH);
+
+   glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, mat_specular);
+   glMaterialfv(GL_FRONT_AND_BACK, GL_SHININESS, mat_shininess);
+   glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+   glMaterialfv (GL_FRONT_AND_BACK, GL_AMBIENT, mat_ambient);
+   glMaterialfv (GL_FRONT_AND_BACK, GL_DIFFUSE, mat_diffuse);
+
+   glEnable(GL_LIGHTING);
+   glEnable(GL_LIGHT0);
+   glEnable(GL_DEPTH_TEST);
+}
+
  
 int main(int argc, char **argv) {
+    
+winwidth=640;
+winheight=640;
     glutInit(&argc, argv);
     glutInitDisplayMode(GLUT_DEPTH | GLUT_DOUBLE | GLUT_RGBA);
     glutInitWindowPosition(100,100);
-    glutInitWindowSize(320,320);
+
+    glutInitWindowSize(winwidth,winheight);
     glutCreateWindow("Practica 1 - Ejercicio 1.2");
+    init_amb();
  
     glutDisplayFunc(renderScene);
     glutIdleFunc(renderScene);
     glutReshapeFunc(changeSize);
+
+    glutMouseFunc(mousefunc);
+   glutMotionFunc(motionfunc);
+
     glutKeyboardFunc(processNormalKeys);
  
     glewInit();
