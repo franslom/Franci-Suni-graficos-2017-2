@@ -1,17 +1,14 @@
 /*--------------
 Vertex Shader: filename "vTexture.glsl"
 ---------------*/
-// #version 150    // YJC: Comment/un-comment this line to resolve compilation errors
-                   //      due to different settings of the default GLSL version
-#version 330 core
+ #version 120    
 
-layout(location = 0) in  vec3 vPosition;
-layout(location = 1) in  vec3 vColor;
+attribute vec3 vPosition;
+attribute  vec3 vColor;
 
-out VS_OUT {
-	vec3 FragPos;
-	vec3 Color;
-} vs_out;
+
+varying vec3 FragPos;
+varying vec3 Color;
 
 
 uniform mat4 view;
@@ -25,7 +22,7 @@ void main()
  	gl_Position = projection * view*model * vPosition4;
  	vec4 vColor4 = vec4( vColor, 1.0 ); 
 
-	vs_out.FragPos = vec3(model * vec4(vPosition, 1.0)); 
-    vs_out.Color = vColor4.rgb;
+	FragPos = vec3(model * vec4(vPosition, 1.0)); 
+    Color = vColor4.rgb;
 
 } 
